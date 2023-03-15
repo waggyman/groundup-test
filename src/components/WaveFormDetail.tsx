@@ -12,15 +12,18 @@ type DetailProps = {
     date: string,
     machineName: string,
     suspectedReason: string,
-    sourceAudio: string
+    sourceAudio: string,
+    comment?: string,
+    action?: string,
   }
+  afterSave: () => void
 }
 
 const WaveFormDetail = (props: DetailProps) => {
-  console.log(props)
-  const [comment, setComment] = useState<string>('')
-  const [action, setAction] = useState<string>('')
-  const [reason, setReason] = useState<string>('')
+  const [comment, setComment] = useState<string>(props.data?.comment || '')
+  const [action, setAction] = useState<string>(props.data?.action || "Select Action")
+  const [reason, setReason] = useState<string>(props.data?.suspectedReason || '')
+  const [isSending, setIsSending] = useState<boolean>(false)
   const ref = useRef<HTMLCanvasElement>(null)
   const ref2 = useRef<HTMLCanvasElement>(null)
   // const [area, setArea] = useState<any>()
@@ -69,24 +72,19 @@ const WaveFormDetail = (props: DetailProps) => {
       // svg.append('g').call(scaleX)
   }
 
-  const updateComment = async (input: any) => {
-    setComment(input.target.value)
-  }
-
-
-  const updateAction = (value: any) => {
-    console.log(value)
-  }
   const sentComment = async (oid: string) => {
     try {
-      const response = await axios.patch(`https://groundup-test-api.vercel.app/anomalies/${oid}`, {
+      setIsSending(true)
+      const response = await axios.post(`https://groundup-test-api.vercel.app/anomalies/${oid}`, {
         suspectedReason: reason,
         action: action,
         comment: comment
       })
-      setReason('')
-      setComment('')
-      setAction('')
+      // setReason('')
+      setIsSending(false)
+      props.afterSave()
+      // setComment('')
+      // setAction('')
     } catch (error) {
       console.error("Error: ", error)
     }
@@ -149,8 +147,14 @@ const WaveFormDetail = (props: DetailProps) => {
   useEffect(() => {
     setTimeout(() => {
       fetchAudio()
-    }, 1000)
+    }, 300)
   }, [props.data.sourceAudio])
+
+  useEffect(() => {
+    setComment(props.data?.comment || '')
+    setAction(props.data?.action || 'Select Action')
+    setReason(props.data.suspectedReason)
+  }, [props.data.comment, props.data.suspectedReason, props.data.action])
 
   return (
     <div>
@@ -199,7 +203,7 @@ const WaveFormDetail = (props: DetailProps) => {
             <span className="font-bold text-sm">Suspected Reason</span>
           </div>
           <div>
-            <Dropdown data={["Unknown Anomaly", "Disrupted"]} onSelected={(value) => setReason(value)} defaultValue={props.data.suspectedReason} className='w-[100%]' />
+            <Dropdown data={["Unknown Anomaly", "Disrupted"]} onSelected={(value) => setReason(value)} defaultValue={reason} className='w-[100%]' />
           </div>
         </div>
 
@@ -208,7 +212,7 @@ const WaveFormDetail = (props: DetailProps) => {
             <span className="font-bold text-sm">Action Required</span>
           </div>
           <div>
-            <Dropdown data={["Remove Anomaly", "Fix Anomaly"]} onSelected={(value) => setAction(value)} defaultValue="Select Action" className='w-[100%]' />
+            <Dropdown data={["Remove Anomaly", "Fix Anomaly"]} onSelected={(value) => setAction(value)} defaultValue={props.data?.action || 'Select Action'} className='w-[100%]' />
           </div>
         </div>
 
@@ -218,11 +222,11 @@ const WaveFormDetail = (props: DetailProps) => {
               Comments
             </span>
           </div>
-          <textarea onChange={updateComment} className='border border-gray-200 w-[100%] rounded-lg px-2 py-2' name="" id="" cols={30} rows={10}></textarea>
+          <textarea onChange={(input) => {setComment(input.target.value)}} className='border border-gray-200 w-[100%] rounded-lg px-2 py-2' name="" id="" cols={30} rows={10} value={comment}></textarea>
         </div>
 
         <div className="mt-2">
-          <button onClick={() => sentComment(props.data.objectId)} className="bg-gr-default-blue text-white px-3 pt-1 pb-2 rounded w-[7rem]">
+          <button disabled={isSending} onClick={() => sentComment(props.data.objectId)} className={(isSending ? "bg-gr-blue-opac" : "bg-gr-default-blue") + " text-white px-3 pt-1 pb-2 rounded w-[7rem]"}>
             <span className="text-center text-white text-xs font-semibold">UPDATE</span>
           </button>
         </div>

@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 type DropdownProps = {
   data: Array<string|Record<string, string|number>>,
@@ -16,6 +16,11 @@ const Dropdown = ({data, onSelected, defaultValue, className}: DropdownProps) =>
     setShown(false)
     if (onSelected) onSelected(`${value}`)
   }
+
+  useEffect(() => {
+    setSelectedValue(defaultValue || 'Please Select')
+  }, [defaultValue])
+
   // const data = ["CNC Machine", "CNB Machine", "OMG Machine"]
   return (
     <div className={((className) ? `${className} ` : '') + "inline-flex bg-white border rounded-md relative"}>

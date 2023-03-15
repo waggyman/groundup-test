@@ -15,7 +15,9 @@ type DataDetail = {
   date: string,
   machineName: string,
   suspectedReason: string,
-  sourceAudio: string
+  sourceAudio: string,
+  comment?: string,
+  action?: string
 }
 
 function App() {
@@ -44,14 +46,15 @@ function App() {
   }
 
   const selectCard = (value: any) => {
-    console.log(value)
     setSelectedData({
       objectId: value._id,
       id: value.code,
       date: convertUnixToTime(value.timestamp),
       machineName: value.machineName,
-      suspectedReason: 'Unknown Anomaly',
-      sourceAudio: value.audioFile
+      suspectedReason: value.suspectedReason,
+      action: value.action,
+      sourceAudio: value.audioFile,
+      comment: value.comment
     })
     // console.log(value);
   }
@@ -115,7 +118,7 @@ function App() {
           {/* WAVEFORM DETAIL */}
           <div className="border-l border-gray-200 w-[70rem]">
             {(selectedData) && (
-              <WaveFormDetail data={selectedData} />
+              <WaveFormDetail data={selectedData} afterSave={() => fetchAnomalies()} />
             )}
           </div>
         </div>
