@@ -21,19 +21,31 @@ type DataDetail = {
 }
 
 function App() {
-  const testSelect = (value: string) => {
-    console.log("DO SOMETHING HERE")
-  }
 
   const [anomalies, setAnomalies] = useState([]);
+  const [selectMachine, setSelectMachine] = useState<string>('');
   const fetchAnomalies = async () => {
     const response = await axios.get('https://groundup-test-api.vercel.app/anomalies')
     setAnomalies(response.data)
   }
 
+  const filterByMachine = (value: string) => {
+    const filtered = anomalies.filter((data: any) => data.machineName === value)
+    setAnomalies(filtered)
+  }
+
+  const testSelect = async (value: string) => {
+    await fetchAnomalies()
+    setSelectMachine(value)
+  }
+
   useEffect(() => {
     fetchAnomalies()
   }, [])
+
+  useEffect(() => {
+    filterByMachine(selectMachine)
+  }, [selectMachine])
 
   const [selectedData, setSelectedData] = useState<DataDetail|undefined>()
 
@@ -64,7 +76,7 @@ function App() {
       <Navbar/>
       <div className='bg-white mx-2 my-2 border rounded'>
         <div className='mx-2 mt-1 pb-1 border-b border-gray-400'>
-          <Dropdown data={["CNC Machine", "ABC Machine", "OMG Machine"]} onSelected={testSelect} className='w-64' />
+          <Dropdown data={["CNC Machine", "Milling Machine"]} onSelected={testSelect} className='w-64' />
         </div>
         <div className="flex">
           <div className="max-w-md">
