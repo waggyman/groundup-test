@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import logo from './logo.svg';
 import './App.css';
 import Navbar from './components/Navbar';
@@ -7,8 +7,10 @@ import BackIcon from './assets/icons/arrow-left.svg';
 import NotifBadge from './components/NotifBadge';
 import Card from './components/Card';
 import WaveFormDetail from './components/WaveFormDetail';
+import axios from 'axios';
 
 type DataDetail = {
+  objectId: string,
   id: string,
   date: string,
   machineName: string,
@@ -21,6 +23,16 @@ function App() {
     console.log("DO SOMETHING HERE")
   }
 
+  const [anomalies, setAnomalies] = useState([]);
+  const fetchAnomalies = async () => {
+    const response = await axios.get('https://groundup-test-api-isdj.vercel.app/anomalies')
+    setAnomalies(response.data)
+  }
+
+  useEffect(() => {
+    fetchAnomalies()
+  }, [])
+
   const sampleData = [
     {
       id: '#0000311',
@@ -28,7 +40,7 @@ function App() {
       anomaly: 'Mild',
       sensor: '12345678',
       timestamp: 1628676001,
-      url: 'https://www2.cs.uic.edu/~i101/SoundFiles/BabyElephantWalk60.wav'
+      url: 'https://vocaroo.com/embed/1gx8kF2Y1g4I'
     },
     {
       id: '#0000312',
@@ -61,11 +73,12 @@ function App() {
   const selectCard = (value: any) => {
     console.log(value)
     setSelectedData({
-      id: value.id,
+      objectId: value._id,
+      id: value.code,
       date: convertUnixToTime(value.timestamp),
-      machineName: value.machine,
+      machineName: value.machineName,
       suspectedReason: 'Unknown Anomaly',
-      sourceAudio: value.url
+      sourceAudio: value.audioFile
     })
     // console.log(value);
   }
@@ -99,17 +112,17 @@ function App() {
 
             <div className='px-3 py-3'>
               {/* cards */}
-              {sampleData.map((data: any, index: number) => {
+              {anomalies.map((data: any, index: number) => {
                 return (
-                  <Card key={index} onClick={(value) => selectCard(data)} selected={(selectedData?.id === data.id)}>
+                  <Card key={index} onClick={(value) => selectCard(data)} selected={(selectedData?.id === data.code)}>
                     {(index <= 1) && (
                       <span className="absolute top-2.5 left-1.5">
                         <NotifBadge/>
                       </span>
                     )}
                     <div className="flex">
-                      <div className='flex-grow text-sm'>ID {data.id}</div>
-                      <div className="text-xs px-3 bg-warning-gr text-white rounded-full py-1">{data.anomaly}</div>
+                      <div className='flex-grow text-sm'>ID #{data.code}</div>
+                      <div className={((data.type == 'severe') ? 'bg-red-600' : (data.type === 'mild') ? 'bg-green-500' : 'bg-warning-gr') + " text-xs px-3 text-white rounded-full py-1"}>{data.type}</div>
                     </div>
                     <div className='pt-2'>
                       <span className="font-bold text-sm">Unknown Anomaly</span>
@@ -118,7 +131,7 @@ function App() {
                       <span className='text-sm'>Detected at: {convertUnixToTime(data.timestamp)}</span>
                     </div>
                     <div className="mt-2">
-                      <a href='#' className='text-sm text-gr-default-blue'>{data.machine}</a>
+                      <a href='#' className='text-sm text-gr-default-blue'>{data.machineName}</a>
                     </div>
                   </Card>
                 )
