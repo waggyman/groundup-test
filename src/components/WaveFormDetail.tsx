@@ -25,6 +25,7 @@ const WaveFormDetail = (props: DetailProps) => {
   const ref2 = useRef<HTMLCanvasElement>(null)
   // const [area, setArea] = useState<any>()
   const drawChart = (waveform: WaveformData, name: string) => {
+    console.log("DRAWING AGAIN")
     const channel = waveform.channel(0)
     const x = d3.scaleLinear();
     const y = d3.scaleLinear();
@@ -77,14 +78,22 @@ const WaveFormDetail = (props: DetailProps) => {
     console.log(value)
   }
   const sentComment = async (oid: string) => {
-    const response = await axios.patch(`https://groundup-test-api-isdj.vercel.app/anomalies/${oid}`, {
-      suspectedReason: reason,
-      action: action,
-      comment: comment
-    })
+    try {
+      const response = await axios.patch(`https://groundup-test-api.vercel.app/anomalies/${oid}`, {
+        suspectedReason: reason,
+        action: action,
+        comment: comment
+      })
+      setReason('')
+      setComment('')
+      setAction('')
+    } catch (error) {
+      console.error("Error: ", error)
+    }
   }
 
   const fetchAudio = async () => {
+    console.log("INITIATED")
     const audioContext = new AudioContext()
     const response = await axios.get(props.data.sourceAudio, {
       responseType: 'arraybuffer'
@@ -141,7 +150,7 @@ const WaveFormDetail = (props: DetailProps) => {
     setTimeout(() => {
       fetchAudio()
     }, 1000)
-  }, [])
+  }, [props.data.sourceAudio])
 
   return (
     <div>

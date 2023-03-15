@@ -25,40 +25,13 @@ function App() {
 
   const [anomalies, setAnomalies] = useState([]);
   const fetchAnomalies = async () => {
-    const response = await axios.get('https://groundup-test-api-isdj.vercel.app/anomalies')
+    const response = await axios.get('https://groundup-test-api.vercel.app/anomalies')
     setAnomalies(response.data)
   }
 
   useEffect(() => {
     fetchAnomalies()
   }, [])
-
-  const sampleData = [
-    {
-      id: '#0000311',
-      machine: 'CNC Machine',
-      anomaly: 'Mild',
-      sensor: '12345678',
-      timestamp: 1628676001,
-      url: 'https://vocaroo.com/embed/1gx8kF2Y1g4I'
-    },
-    {
-      id: '#0000312',
-      machine: 'CNC Machine',
-      anomaly: 'Mild',
-      sensor: '12345678',
-      timestamp: 1628676001,
-      url: 'https://www2.cs.uic.edu/~i101/SoundFiles/BabyElephantWalk60.wav'
-    },
-    {
-      id: '#0000313',
-      machine: 'CNC Machine',
-      anomaly: 'Mild',
-      sensor: '12345678',
-      timestamp: 1628676001,
-      url: 'https://www2.cs.uic.edu/~i101/SoundFiles/BabyElephantWalk60.wav'
-    }
-  ]
 
   const [selectedData, setSelectedData] = useState<DataDetail|undefined>()
 
